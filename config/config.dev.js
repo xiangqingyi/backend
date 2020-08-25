@@ -1,7 +1,7 @@
 const path = require('path');
 const rootUrl = path.join(process.cwd(), 'dist');
 
-export default {
+module.exports = {
     production: false,
     rootUrl: path.join(process.cwd(), 'dist'),
     staticPath: path.join(rootUrl, '../build'),

@@ -1,17 +1,17 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const debug = require('debug')('backend:server');
+const http = require('http');
+const app = express();
 
 const appRouter = require('./routes/app/app')
-var debug = require('debug')('backend:server');
-var http = require('http');
+const server = http.createServer(app);
+const io = require('socket.io')(server);
 
-
-var app = express();
-
-var port = normalizePort(process.env.PORT || '7000');
+const port = normalizePort(process.env.PORT || '7000');
 app.set('port', port);
 
 // view engine setup
@@ -22,7 +22,8 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static('public'))
+// app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', appRouter);
 
@@ -42,10 +43,16 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+io.on('connection', function(socket) {
+  socket.on('privareMsg', function(msg) {
+    // io.emit('')
+    console.log(msg);
 
+  })
+})
 
 function normalizePort(val) {
-   var port = parseInt(val, 10);
+   const port = parseInt(val, 10);
    if (isNaN(port)) {
      return val;
    }
@@ -60,7 +67,7 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
+  const bind = typeof port === 'string'
     ? 'Pipe ' + port
     : 'Port ' + port;
 
@@ -85,14 +92,13 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
+  const addr = server.address();
+  const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
 
-const server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening)
